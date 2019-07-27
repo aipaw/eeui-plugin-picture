@@ -111,7 +111,7 @@ public class LocalMediaFolder implements Parcelable {
         this.images = in.createTypedArrayList(LocalMedia.CREATOR);
     }
 
-    public static final Parcelable.Creator<LocalMediaFolder> CREATOR = new Parcelable.Creator<LocalMediaFolder>() {
+    public static final Creator<LocalMediaFolder> CREATOR = new Creator<LocalMediaFolder>() {
         @Override
         public LocalMediaFolder createFromParcel(Parcel source) {
             return new LocalMediaFolder(source);

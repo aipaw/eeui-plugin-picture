@@ -1,10 +1,19 @@
 package com.luck.picture.lib.config;
 
 
+import android.content.Context;
+import android.database.Cursor;
 import android.media.MediaMetadataRetriever;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.MediaStore;
+import android.support.annotation.RequiresApi;
 import android.text.TextUtils;
 
+import com.luck.picture.lib.R;
 import com.luck.picture.lib.entity.LocalMedia;
+import com.luck.picture.lib.tools.PictureFileUtils;
+import com.luck.picture.lib.tools.SdkVersionUtils;
 
 import java.io.File;
 
@@ -14,6 +23,8 @@ import java.io.File;
  * package：com.luck.picture.lib.config
  * email：893855882@qq.com
  * data：2017/5/24
+ *
+ * @author luck
  */
 
 public final class PictureMimeType {
@@ -187,7 +198,7 @@ public final class PictureMimeType {
                 File file = new File(path);
                 String fileName = file.getName();
                 int last = fileName.lastIndexOf(".") + 1;
-                String temp = fileName.substring(last, fileName.length());
+                String temp = fileName.substring(last);
                 return "image/" + temp;
             }
         } catch (Exception e) {
@@ -197,13 +208,21 @@ public final class PictureMimeType {
         return "image/jpeg";
     }
 
-    public static String createVideoType(String path) {
+    public static String createVideoType(Context context, String path) {
         try {
             if (!TextUtils.isEmpty(path)) {
-                File file = new File(path);
+                boolean androidQ = SdkVersionUtils.checkedAndroid_Q();
+                File file;
+                if (androidQ) {
+                    String newPath = PictureFileUtils.getPath(context.getApplicationContext(),
+                            Uri.parse(path));
+                    file = new File(newPath);
+                } else {
+                    file = new File(path);
+                }
                 String fileName = file.getName();
                 int last = fileName.lastIndexOf(".") + 1;
-                String temp = fileName.substring(last, fileName.length());
+                String temp = fileName.substring(last);
                 return "video/" + temp;
             }
         } catch (Exception e) {
@@ -249,6 +268,30 @@ public final class PictureMimeType {
     }
 
     /**
+     * get Local video duration
+     *
+     * @return
+     */
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static int getLocalVideoDurationToAndroidQ(Context context, String videoPath) {
+        int duration;
+        try {
+            Cursor query = context.getApplicationContext().getContentResolver().query(Uri.parse(videoPath),
+                    null, null, null);
+            if (query != null) {
+                query.moveToFirst();
+                duration = query.getInt(query.getColumnIndexOrThrow(MediaStore.Video
+                        .Media.DURATION));
+                return duration;
+            }
+            return 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    /**
      * 是否是长图
      *
      * @param media
@@ -274,7 +317,7 @@ public final class PictureMimeType {
         try {
             int index = path.lastIndexOf(".");
             if (index > 0) {
-                String imageType = path.substring(index, path.length());
+                String imageType = path.substring(index);
                 switch (imageType) {
                     case ".png":
                     case ".PNG":
@@ -295,6 +338,26 @@ public final class PictureMimeType {
         } catch (Exception e) {
             e.printStackTrace();
             return ".png";
+        }
+    }
+
+    /**
+     * 根据不同的类型，返回不同的错误提示
+     *
+     * @param mediaMimeType
+     * @return
+     */
+    public static String s(Context context, int mediaMimeType) {
+        Context ctx = context.getApplicationContext();
+        switch (mediaMimeType) {
+            case PictureConfig.TYPE_IMAGE:
+                return ctx.getString(R.string.picture_error);
+            case PictureConfig.TYPE_VIDEO:
+                return ctx.getString(R.string.picture_video_error);
+            case PictureConfig.TYPE_AUDIO:
+                return ctx.getString(R.string.picture_audio_error);
+            default:
+                return ctx.getString(R.string.picture_error);
         }
     }
 

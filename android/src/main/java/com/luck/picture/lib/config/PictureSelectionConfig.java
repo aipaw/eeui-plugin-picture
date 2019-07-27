@@ -231,7 +231,7 @@ public final class PictureSelectionConfig implements Parcelable {
         this.selectionMedias = in.createTypedArrayList(LocalMedia.CREATOR);
     }
 
-    public static final Parcelable.Creator<PictureSelectionConfig> CREATOR = new Parcelable.Creator<PictureSelectionConfig>() {
+    public static final Creator<PictureSelectionConfig> CREATOR = new Creator<PictureSelectionConfig>() {
         @Override
         public PictureSelectionConfig createFromParcel(Parcel source) {
             return new PictureSelectionConfig(source);

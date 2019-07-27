@@ -11,12 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
-import app.eeui.framework.extend.integration.glide.Glide;
-import app.eeui.framework.extend.integration.glide.Priority;
-import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
-import app.eeui.framework.extend.integration.glide.request.RequestOptions;
-import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
-import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 import com.luck.picture.lib.PictureVideoPlayActivity;
 import com.luck.picture.lib.R;
 import com.luck.picture.lib.config.PictureConfig;
@@ -29,6 +23,13 @@ import com.luck.picture.lib.widget.longimage.ImageViewState;
 import com.luck.picture.lib.widget.longimage.SubsamplingScaleImageView;
 
 import java.util.List;
+
+import app.eeui.framework.extend.integration.glide.Glide;
+import app.eeui.framework.extend.integration.glide.Priority;
+import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
+import app.eeui.framework.extend.integration.glide.request.RequestOptions;
+import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
+import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 
 /**
  * @author：luck

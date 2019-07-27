@@ -65,7 +65,7 @@ public class EventEntity implements Parcelable {
         this.medias = in.createTypedArrayList(LocalMedia.CREATOR);
     }
 
-    public static final Parcelable.Creator<EventEntity> CREATOR = new Parcelable.Creator<EventEntity>() {
+    public static final Creator<EventEntity> CREATOR = new Creator<EventEntity>() {
         @Override
         public EventEntity createFromParcel(Parcel source) {
             return new EventEntity(source);

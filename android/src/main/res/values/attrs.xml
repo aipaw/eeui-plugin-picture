@@ -26,18 +26,20 @@
     <attr name="picture.complete.textColor" format="reference|color" />
     <attr name="picture.ac_preview.title.textColor" format="reference|color" />
     <attr name="picture.ac_preview.complete.textColor" format="reference|color" />
-    <attr name="picture.ac_preview.title.bg" format="reference|color" />
     <attr name="picture.ac_preview.bottom.bg" format="reference|color" />
     <attr name="picture.status.color" format="reference|color" />
+    <attr name="picture.ac_preview.title.bg" format="reference|color" />
     <attr name="picture.preview.leftBack.icon" format="reference" />
     <attr name="picture.statusFontColor" format="boolean" />
-    <attr name="picture.preview.statusFontColor" format="boolean" />
     <attr name="picture.style.numComplete" format="boolean" />
     <attr name="picture.style.checkNumMode" format="boolean" />
     <attr name="picture.crop.toolbar.bg" format="reference|color" />
     <attr name="picture.crop.status.color" format="reference|color" />
     <attr name="picture.crop.title.color" format="reference|color" />
     <attr name="picture.folder_checked_dot" format="reference" />
+
+    <attr format="color" name="colorPrimary"/>
+    <attr format="color" name="colorPrimaryDark"/>
 
     <declare-styleable name="ucrop_UCropView">
 
@@ -70,5 +72,4 @@
         <attr name="ucrop_artv_ratio_y" format="float"/>
 
     </declare-styleable>
-    
 </resources>

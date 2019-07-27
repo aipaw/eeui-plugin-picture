@@ -17,17 +17,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import app.eeui.framework.extend.integration.glide.Glide;
-import app.eeui.framework.extend.integration.glide.Priority;
-import app.eeui.framework.extend.integration.glide.load.DataSource;
-import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
-import app.eeui.framework.extend.integration.glide.load.engine.GlideException;
-import app.eeui.framework.extend.integration.glide.load.resource.gif.GifDrawable;
-import app.eeui.framework.extend.integration.glide.request.RequestListener;
-import app.eeui.framework.extend.integration.glide.request.RequestOptions;
-import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
-import app.eeui.framework.extend.integration.glide.request.target.Target;
-import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.dialog.CustomDialog;
@@ -37,6 +26,7 @@ import com.luck.picture.lib.photoview.OnViewTapListener;
 import com.luck.picture.lib.photoview.PhotoView;
 import com.luck.picture.lib.tools.PictureFileUtils;
 import com.luck.picture.lib.tools.ScreenUtils;
+import com.luck.picture.lib.tools.ToastManage;
 import com.luck.picture.lib.widget.PreviewViewPager;
 import com.luck.picture.lib.widget.longimage.ImageSource;
 import com.luck.picture.lib.widget.longimage.ImageViewState;
@@ -53,6 +43,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import app.eeui.framework.extend.integration.glide.Glide;
+import app.eeui.framework.extend.integration.glide.Priority;
+import app.eeui.framework.extend.integration.glide.load.DataSource;
+import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
+import app.eeui.framework.extend.integration.glide.load.engine.GlideException;
+import app.eeui.framework.extend.integration.glide.load.resource.gif.GifDrawable;
+import app.eeui.framework.extend.integration.glide.request.RequestListener;
+import app.eeui.framework.extend.integration.glide.request.RequestOptions;
+import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
+import app.eeui.framework.extend.integration.glide.request.target.Target;
+import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
@@ -65,7 +66,6 @@ import io.reactivex.disposables.Disposable;
  */
 public class PictureExternalPreviewActivity extends PictureBaseActivity implements View.OnClickListener {
     private ImageButton left_back;
-    private ImageButton right_del;
     private TextView tv_title;
     private PreviewViewPager viewPager;
     private List<LocalMedia> images = new ArrayList<>();
@@ -76,6 +76,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
     private RxPermissions rxPermissions;
     private loadDataThread loadDataThread;
 
+    private ImageButton right_del;
     private String callbackId;
     private JSCallback mCallback;
     public static Map<String, JSCallback> mCallbackLists = new HashMap<>();
@@ -128,10 +129,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.left_back) {
-            finish();
-            overridePendingTransition(0, R.anim.a3);
-        }else if (v.getId() == R.id.right_del) {
+        if (v.getId() == R.id.right_del) {
             int size = images.size();
             int index = viewPager.getCurrentItem();
             if (size == 1) {
@@ -152,11 +150,13 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
                 position = Math.min(index, images.size() - 1);
                 initViewPageAdapterData();
             }
+        }else{
+            finish();
+            overridePendingTransition(0, R.anim.a3);
         }
     }
 
     public class SimpleFragmentAdapter extends PagerAdapter {
-
 
         @Override
         public int getCount() {
@@ -286,7 +286,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
                                         if (aBoolean) {
                                             showDownLoadDialog(path);
                                         } else {
-                                            showToast(getString(R.string.picture_jurisdiction));
+                                            ToastManage.s(mContext, getString(R.string.picture_jurisdiction));
                                         }
                                     }
 
@@ -357,10 +357,10 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
                         String dirPath = PictureFileUtils.createDir(PictureExternalPreviewActivity.this,
                                 System.currentTimeMillis() + ".png", directory_path);
                         PictureFileUtils.copyFile(path, dirPath);
-                        showToast(getString(R.string.picture_save_success) + "\n" + dirPath);
+                        ToastManage.s(mContext, getString(R.string.picture_save_success) + "\n" + dirPath);
                         dismissDialog();
                     } catch (IOException e) {
-                        showToast(getString(R.string.picture_save_error) + "\n" + e.getMessage());
+                        ToastManage.s(mContext, getString(R.string.picture_save_error) + "\n" + e.getMessage());
                         dismissDialog();
                         e.printStackTrace();
                     }
@@ -381,6 +381,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
             this.path = path;
         }
 
+        @Override
         public void run() {
             try {
                 showLoadingImage(path);
@@ -416,7 +417,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
             message.obj = path;
             handler.sendMessage(message);
         } catch (IOException e) {
-            showToast(getString(R.string.picture_save_error) + "\n" + e.getMessage());
+            ToastManage.s(mContext, getString(R.string.picture_save_error) + "\n" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -429,7 +430,7 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
             switch (msg.what) {
                 case 200:
                     String path = (String) msg.obj;
-                    showToast(getString(R.string.picture_save_success) + "\n" + path);
+                    ToastManage.s(mContext, getString(R.string.picture_save_success) + "\n" + path);
                     dismissDialog();
                     break;
             }

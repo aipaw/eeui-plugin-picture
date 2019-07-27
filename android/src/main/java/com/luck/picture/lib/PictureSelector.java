@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import com.luck.picture.lib.config.PictureConfig;
+import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.entity.LocalMedia;
 import com.luck.picture.lib.tools.DoubleUtils;
 import com.taobao.weex.bridge.JSCallback;
@@ -82,6 +83,16 @@ public final class PictureSelector {
     }
 
     /**
+     * 外部预览时设置样式
+     *
+     * @param themeStyle
+     * @return
+     */
+    public PictureSelectionModel themeStyle(int themeStyle) {
+        return new PictureSelectionModel(this, PictureMimeType.ofImage()).theme(themeStyle);
+    }
+
+    /**
      * @param data
      * @return Selector Multiple LocalMedia
      */
@@ -134,27 +145,14 @@ public final class PictureSelector {
      * @param position
      * @param medias
      */
-    public void externalPicturePreview(int position, List<LocalMedia> medias, JSCallback callback) {
+    public void externalPicturePreview(int position, List<LocalMedia> medias) {
         if (!DoubleUtils.isFastDoubleClick()) {
             Intent intent = new Intent(getActivity(), PictureExternalPreviewActivity.class);
             intent.putExtra(PictureConfig.EXTRA_PREVIEW_SELECT_LIST, (Serializable) medias);
             intent.putExtra(PictureConfig.EXTRA_POSITION, position);
-            //
-            if (callback != null) {
-                String callbackId = eeuiCommon.randomString(8);
-                PictureExternalPreviewActivity.mCallbackLists.put(callbackId, callback);
-                intent.putExtra("callbackId", callbackId);
-            }
-            //
-            if (getActivity() != null) {
-                getActivity().startActivity(intent);
-                getActivity().overridePendingTransition(R.anim.a5, 0);
-            }
+            getActivity().startActivity(intent);
+            getActivity().overridePendingTransition(R.anim.a5, 0);
         }
-    }
-
-    public void externalPicturePreview(int position, List<LocalMedia> medias) {
-        externalPicturePreview(position, medias, null);
     }
 
     /**
@@ -172,6 +170,31 @@ public final class PictureSelector {
             intent.putExtra(PictureConfig.DIRECTORY_PATH, directory_path);
             getActivity().startActivity(intent);
             getActivity().overridePendingTransition(R.anim.a5, 0);
+        }
+    }
+
+    /**
+     * set preview image
+     *
+     * @param position
+     * @param medias
+     */
+    public void externalPicturePreview(int position, List<LocalMedia> medias, JSCallback callback) {
+        if (!DoubleUtils.isFastDoubleClick()) {
+            Intent intent = new Intent(getActivity(), PictureExternalPreviewActivity.class);
+            intent.putExtra(PictureConfig.EXTRA_PREVIEW_SELECT_LIST, (Serializable) medias);
+            intent.putExtra(PictureConfig.EXTRA_POSITION, position);
+            //
+            if (callback != null) {
+                String callbackId = eeuiCommon.randomString(8);
+                PictureExternalPreviewActivity.mCallbackLists.put(callbackId, callback);
+                intent.putExtra("callbackId", callbackId);
+            }
+            //
+            if (getActivity() != null) {
+                getActivity().startActivity(intent);
+                getActivity().overridePendingTransition(R.anim.a5, 0);
+            }
         }
     }
 

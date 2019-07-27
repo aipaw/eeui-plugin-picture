@@ -22,10 +22,8 @@ import com.luck.picture.lib.observable.ImagesObservable;
 import com.luck.picture.lib.rxbus2.RxBus;
 import com.luck.picture.lib.rxbus2.Subscribe;
 import com.luck.picture.lib.rxbus2.ThreadMode;
-import com.luck.picture.lib.tools.AttrsUtils;
-import com.luck.picture.lib.tools.LightStatusBarUtils;
 import com.luck.picture.lib.tools.ScreenUtils;
-import com.luck.picture.lib.tools.ToolbarUtil;
+import com.luck.picture.lib.tools.ToastManage;
 import com.luck.picture.lib.tools.VoiceUtils;
 import com.luck.picture.lib.widget.PreviewViewPager;
 import com.yalantis.ucrop.UCrop;
@@ -61,7 +59,11 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
     private int screenWidth;
     private Handler mHandler;
 
-    //EventBus 3.0 回调
+    /**
+     * EventBus 3.0 回调
+     *
+     * @param obj
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void eventBus(EventEntity obj) {
         switch (obj.what) {
@@ -87,9 +89,6 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
         }
         mHandler = new Handler();
         screenWidth = ScreenUtils.getScreenWidth(this);
-        int status_color = AttrsUtils.getTypeValueColor(this, R.attr.picture_status_color);
-        ToolbarUtil.setColorNoTranslucent(this, status_color);
-        LightStatusBarUtils.setLightStatusBar(this, previewStatusFont);
         animation = OptAnimationLoader.loadAnimation(this, R.anim.modal_in);
         animation.setAnimationListener(this);
         picture_left_back = (ImageView) findViewById(R.id.picture_left_back);
@@ -132,7 +131,7 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
                         boolean toEqual = PictureMimeType.
                                 mimeToEqual(pictureType, image.getPictureType());
                         if (!toEqual) {
-                            showToast(getString(R.string.picture_rule));
+                            ToastManage.s(mContext,getString(R.string.picture_rule));
                             return;
                         }
                     }
@@ -147,7 +146,7 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
                         check.setSelected(false);
                     }
                     if (selectImages.size() >= config.maxSelectNum && isChecked) {
-                        showToast(getString(R.string.picture_message_max_num, config.maxSelectNum));
+                        ToastManage.s(mContext, getString(R.string.picture_message_max_num, config.maxSelectNum));
                         check.setSelected(false);
                         return;
                     }
@@ -403,7 +402,7 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
                     boolean eqImg = pictureType.startsWith(PictureConfig.IMAGE);
                     String str = eqImg ? getString(R.string.picture_min_img_num, config.minSelectNum)
                             : getString(R.string.picture_min_video_num, config.minSelectNum);
-                    showToast(str);
+                    ToastManage.s(mContext,str);
                     return;
                 }
             }
@@ -455,7 +454,7 @@ public class PicturePreviewActivity extends PictureBaseActivity implements
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             Throwable throwable = (Throwable) data.getSerializableExtra(UCrop.EXTRA_ERROR);
-            showToast(throwable.getMessage());
+            ToastManage.s(mContext,throwable.getMessage());
         }
     }
 

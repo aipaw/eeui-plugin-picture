@@ -193,7 +193,7 @@ public class eeui_picture {
         JSONObject json = eeuiJson.parseObject(object);
         final List<LocalMedia> selected = toLocalMedia(eeuiJson.parseArray(json.getString("lists")));
         Luban.with(context)
-                .loadLocalMedia(selected)
+                .loadMediaData(selected)
                 .ignoreBy(eeuiJson.getInt(json, "compressSize", 100))
                 .setCompressListener(new OnCompressListener() {
                     @Override
