@@ -64,7 +64,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     // imagePickerVc.navigationBar.translucent = NO;
 
 #pragma mark - 五类个性化设置，这些参数都可以不传，此时会走默认设置
-    imagePickerVc.isSelectOriginalPhoto = YES;
+//    imagePickerVc.isSelectOriginalPhoto = YES;
 //
 //    if (self.maxCountTF.text.integerValue > 1) {
 //        // 1.设置目前已经选中的图片数组
@@ -167,7 +167,8 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     // Deprecated, Use statusBarStyle
     // imagePickerVc.isStatusBarDefault = NO;
     imagePickerVc.statusBarStyle = UIStatusBarStyleLightContent;
-
+    imagePickerVc.modalPresentationStyle = UIModalPresentationFullScreen;
+    
     // 设置是否显示图片序号
 //    imagePickerVc.showSelectedIndex = self.showSelectedIndexSwitch.isOn;
 
@@ -231,25 +232,23 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 
 - (UIImagePickerController *)imagePickerVc {
     if (_imagePickerVc == nil) {
-        _imagePickerVc = [[UIImagePickerController alloc] init];
-        _imagePickerVc.delegate = self;
-        // set appearance / 改变相册选择页的导航栏外观
-        if (iOS7Later) {
-            _imagePickerVc.navigationBar.barTintColor = [DeviceUtil getTopviewControler].navigationController.navigationBar.barTintColor;
-        }
-        _imagePickerVc.navigationBar.tintColor = [DeviceUtil getTopviewControler].navigationController.navigationBar.tintColor;
-        UIBarButtonItem *tzBarItem, *BarItem;
-        if (@available(iOS 9.0, *)) {
-            tzBarItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[TZImagePickerController class]]];
-            BarItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UIImagePickerController class]]];
-        } else {
-            tzBarItem = [UIBarButtonItem appearanceWhenContainedIn:[TZImagePickerController class], nil];
-            BarItem = [UIBarButtonItem appearanceWhenContainedIn:[UIImagePickerController class], nil];
-        }
-        NSDictionary *titleTextAttributes = [tzBarItem titleTextAttributesForState:UIControlStateNormal];
-        [BarItem setTitleTextAttributes:titleTextAttributes forState:UIControlStateNormal];
-
-    }
+           _imagePickerVc = [[UIImagePickerController alloc] init];
+           _imagePickerVc.delegate = self;
+           // set appearance / 改变相册选择页的导航栏外观
+           _imagePickerVc.navigationBar.barTintColor = [DeviceUtil getTopviewControler].navigationController.navigationBar.barTintColor;
+           _imagePickerVc.navigationBar.tintColor = [DeviceUtil getTopviewControler].navigationController.navigationBar.tintColor;
+           UIBarButtonItem *tzBarItem, *BarItem;
+           if (@available(iOS 9, *)) {
+               tzBarItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[TZImagePickerController class]]];
+               BarItem = [UIBarButtonItem appearanceWhenContainedInInstancesOfClasses:@[[UIImagePickerController class]]];
+           } else {
+               tzBarItem = [UIBarButtonItem appearanceWhenContainedIn:[TZImagePickerController class], nil];
+               BarItem = [UIBarButtonItem appearanceWhenContainedIn:[UIImagePickerController class], nil];
+           }
+           NSDictionary *titleTextAttributes = [tzBarItem titleTextAttributesForState:UIControlStateNormal];
+           [BarItem setTitleTextAttributes:titleTextAttributes forState:UIControlStateNormal];
+    
+       }
     return _imagePickerVc;
 }
 
@@ -257,38 +256,24 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 
 - (void)takePhoto {
     AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
-    if ((authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied) && iOS7Later) {
+    if (authStatus == AVAuthorizationStatusRestricted || authStatus == AVAuthorizationStatusDenied) {
         // 无相机权限 做一个友好的提示
-        if (iOS8Later) {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法使用相机" message:@"请在iPhone的""设置-隐私-相机""中允许访问相机" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
-            [alert show];
-        } else {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法使用相机" message:@"请在iPhone的""设置-隐私-相机""中允许访问相机" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
-            [alert show];
-        }
+        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法使用相机" message:@"请在iPhone的""设置-隐私-相机""中允许访问相机" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
+        [alert show];
     } else if (authStatus == AVAuthorizationStatusNotDetermined) {
         // fix issue 466, 防止用户首次拍照拒绝授权时相机页黑屏
-        if (iOS7Later) {
-            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
-                if (granted) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [self takePhoto];
-                    });
-                }
-            }];
-        } else {
-            [self takePhoto];
-        }
+        [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+            if (granted) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [self takePhoto];
+                });
+            }
+        }];
         // 拍照之前还需要检查相册权限
-    } else if ([TZImageManager authorizationStatus] == 2) { // 已被拒绝，没有相册权限，将无法保存拍的照片
-        if (iOS8Later) {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法访问相册" message:@"请在iPhone的""设置-隐私-相册""中允许访问相册" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
-            [alert show];
-        } else {
-            UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法访问相册" message:@"请在iPhone的""设置-隐私-相册""中允许访问相册" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
-            [alert show];
-        }
-    } else if ([TZImageManager authorizationStatus] == 0) { // 未请求过相册权限
+    } else if ([PHPhotoLibrary authorizationStatus] == 2) { // 已被拒绝，没有相册权限，将无法保存拍的照片
+        UIAlertView * alert = [[UIAlertView alloc]initWithTitle:@"无法访问相册" message:@"请在iPhone的""设置-隐私-相册""中允许访问相册" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"设置", nil];
+        [alert show];
+    } else if ([PHPhotoLibrary authorizationStatus] == 0) { // 未请求过相册权限
         [[TZImageManager manager] requestAuthorizationWithCompletion:^{
             [self takePhoto];
         }];
@@ -308,7 +293,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         __strong typeof(weakSelf) strongSelf = weakSelf;
         strongSelf.location = nil;
     }];
-
+    
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
     if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
         self.imagePickerVc.sourceType = sourceType;
@@ -322,9 +307,6 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         if (mediaTypes.count) {
             _imagePickerVc.mediaTypes = mediaTypes;
         }
-        if (iOS8Later) {
-            _imagePickerVc.modalPresentationStyle = UIModalPresentationOverCurrentContext;
-        }
         [self openViewController:_imagePickerVc];
     } else {
         NSLog(@"模拟器中无法打开照相机,请在真机中使用");
@@ -334,91 +316,45 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 - (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     [picker dismissViewControllerAnimated:YES completion:nil];
     NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
-
-    //callback
-    UIImage *img = [info valueForKey:UIImagePickerControllerOriginalImage];
-
-    NSString *filename = @"picture.jpg";
-    NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
-    NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
-
-    //压缩
-    BOOL compress = self.params[@"compress"] ? [WXConvert BOOL:self.params[@"compress"]] : NO;
-    if (compress) {
-        NSData *data = UIImageJPEGRepresentation(img, 1);
-        NSInteger imgSize = data.length/1024;
-
-        NSInteger compressSize = self.params[@"compressSize"] ? [WXConvert NSInteger:self.params[@"compressSize"]] : 100;
-        if (compressSize < imgSize) {
-            [UIImageJPEGRepresentation(img, 0.5) writeToFile:imgPath atomically:YES];
-        }
-    } else {
-        [UIImageJPEGRepresentation(img, 1.0) writeToFile:imgPath atomically:YES];
-    }
-
-    NSString *types = self.params[@"type"] ? [WXConvert NSString:self.params[@"type"]] : @"gallery";
-    BOOL crop = self.params[@"crop"] ? [WXConvert BOOL:self.params[@"crop"]] : NO;
-
-    NSDictionary *dic = @{@"path":path, @"cutPath":path, @"compressPath":path, @"isCut":@(crop), @"compressed":@(compress), @"mimeType":types};
-
-    NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":@[dic]};
-    self.callback(result, YES);
-
-
+    
     TZImagePickerController *tzImagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:1 delegate:self];
 //    tzImagePickerVc.sortAscendingByModificationDate = self.sortAscendingSwitch.isOn;
     [tzImagePickerVc showProgressHUD];
     if ([type isEqualToString:@"public.image"]) {
         UIImage *image = [info objectForKey:UIImagePickerControllerOriginalImage];
-
+        NSDictionary *meta = [info objectForKey:UIImagePickerControllerMediaMetadata];
         // save photo and get asset / 保存图片，获取到asset
-        [[TZImageManager manager] savePhotoWithImage:image location:self.location completion:^(NSError *error){
+        [[TZImageManager manager] savePhotoWithImage:image meta:meta location:self.location completion:^(PHAsset *asset, NSError *error){
+            [tzImagePickerVc hideProgressHUD];
             if (error) {
-                [tzImagePickerVc hideProgressHUD];
                 NSLog(@"图片保存失败 %@",error);
             } else {
-                [[TZImageManager manager] getCameraRollAlbum:NO allowPickingImage:YES needFetchAssets:NO completion:^(TZAlbumModel *model) {
-                    [[TZImageManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:NO allowPickingImage:YES completion:^(NSArray<TZAssetModel *> *models) {
-                        [tzImagePickerVc hideProgressHUD];
-                        TZAssetModel *assetModel = [models firstObject];
-                        if (tzImagePickerVc.sortAscendingByModificationDate) {
-                            assetModel = [models lastObject];
-                        }
-                        if ([WXConvert BOOL:self.params[@"crop"]]) { // 允许裁剪,去裁剪
-                            TZImagePickerController *imagePicker = [[TZImagePickerController alloc] initCropTypeWithAsset:assetModel.asset photo:image completion:^(UIImage *cropImage, id asset) {
-                                [self refreshCollectionViewWithAddedAsset:asset image:cropImage];
-                            }];
-                            imagePicker.needCircleCrop = [WXConvert BOOL:self.params[@"circle"]];
-                            imagePicker.circleCropRadius = 100;
-                            [self openViewController:imagePicker];
-                        } else {
-                            [self refreshCollectionViewWithAddedAsset:assetModel.asset image:image];
-                        }
+                TZAssetModel *assetModel = [[TZImageManager manager] createModelWithAsset:asset];
+                 if ([WXConvert BOOL:self.params[@"crop"]]) { // 允许裁剪,去裁剪
+                    TZImagePickerController *imagePicker = [[TZImagePickerController alloc] initCropTypeWithAsset:assetModel.asset photo:image completion:^(UIImage *cropImage, id asset) {
+                        [self refreshCollectionViewWithAddedAsset:asset image:cropImage];
                     }];
-                }];
+                    imagePicker.allowPickingImage = YES;
+                    imagePicker.needCircleCrop = [WXConvert BOOL:self.params[@"circle"]];
+                    imagePicker.circleCropRadius = 100;
+                    [self openViewController:imagePicker];
+                } else {
+                    [self refreshCollectionViewWithAddedAsset:assetModel.asset image:image];
+                }
             }
         }];
     } else if ([type isEqualToString:@"public.movie"]) {
         NSURL *videoUrl = [info objectForKey:UIImagePickerControllerMediaURL];
         if (videoUrl) {
-            [[TZImageManager manager] saveVideoWithUrl:videoUrl location:self.location completion:^(NSError *error) {
+            [[TZImageManager manager] saveVideoWithUrl:videoUrl location:self.location completion:^(PHAsset *asset, NSError *error) {
+                [tzImagePickerVc hideProgressHUD];
                 if (!error) {
-                    [[TZImageManager manager] getCameraRollAlbum:YES allowPickingImage:NO needFetchAssets:NO completion:^(TZAlbumModel *model) {
-                        [[TZImageManager manager] getAssetsFromFetchResult:model.result allowPickingVideo:YES allowPickingImage:NO completion:^(NSArray<TZAssetModel *> *models) {
-                            [tzImagePickerVc hideProgressHUD];
-                            TZAssetModel *assetModel = [models firstObject];
-                            if (tzImagePickerVc.sortAscendingByModificationDate) {
-                                assetModel = [models lastObject];
-                            }
-                            [[TZImageManager manager] getPhotoWithAsset:assetModel.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
-                                if (!isDegraded && photo) {
-                                    [self refreshCollectionViewWithAddedAsset:assetModel.asset image:photo];
-                                }
-                            }];
-                        }];
+                    TZAssetModel *assetModel = [[TZImageManager manager] createModelWithAsset:asset];
+                    [[TZImageManager manager] getPhotoWithAsset:assetModel.asset completion:^(UIImage *photo, NSDictionary *info, BOOL isDegraded) {
+                        if (!isDegraded && photo) {
+                            [self refreshCollectionViewWithAddedAsset:assetModel.asset image:photo];
+                        }
                     }];
-                } else {
-                    [tzImagePickerVc hideProgressHUD];
                 }
             }];
         }
@@ -457,10 +393,12 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 }
 
 // The picker should dismiss itself; when it dismissed these handle will be called.
+// You can also set autoDismiss to NO, then the picker don't dismiss itself.
 // If isOriginalPhoto is YES, user picked the original photo.
 // You can get original photo with asset, by the method [[TZImageManager manager] getOriginalPhotoWithAsset:completion:].
 // The UIImage Object in photos default width is 828px, you can set it by photoWidth property.
 // 这个照片选择器会自己dismiss，当选择器dismiss的时候，会执行下面的代理方法
+// 你也可以设置autoDismiss属性为NO，选择器就不会自己dismis了
 // 如果isSelectOriginalPhoto为YES，表明用户选择了原图
 // 你可以通过一个asset获得原图，通过这个方法：[[TZImageManager manager] getOriginalPhotoWithAsset:completion:]
 // photos数组里的UIImage对象，默认是828像素宽，你可以通过设置photoWidth属性的值来改变它
@@ -470,34 +408,28 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 //    _isSelectOriginalPhoto = isSelectOriginalPhoto;
 //    [_collectionView reloadData];
     // _collectionView.contentSize = CGSizeMake(0, ((_selectedPhotos.count + 2) / 3 ) * (_margin + _itemWH));
-
+    
     // 1.打印图片名字
 //    [self printAssetsName:assets];
     // 2.图片位置信息
-    if (iOS8Later) {
-        for (PHAsset *phAsset in assets) {
-            NSLog(@"location:%@",phAsset.location);
-        }
+    for (PHAsset *phAsset in assets) {
+        NSLog(@"location:%@",phAsset.location);
     }
-
-    /*
-     // 3. 获取原图的示例，这样一次性获取很可能会导致内存飙升，建议获取1-2张，消费和释放掉，再获取剩下的
-     __block NSMutableArray *originalPhotos = [NSMutableArray array];
-     __block NSInteger finishCount = 0;
-     for (NSInteger i = 0; i < assets.count; i++) {
-     [originalPhotos addObject:@1];
-     }
-     for (NSInteger i = 0; i < assets.count; i++) {
-     PHAsset *asset = assets[i];
-     [[TZImageManager manager] getOriginalPhotoWithAsset:asset completion:^(UIImage *photo, NSDictionary *info) {
-     finishCount += 1;
-     [originalPhotos replaceObjectAtIndex:i withObject:photo];
-     if (finishCount >= assets.count) {
-     NSLog(@"All finished.");
-     }
-     }];
-     }
-     */
+    
+    // 3. 获取原图的示例，用队列限制最大并发为1，避免内存暴增
+//    self.operationQueue = [[NSOperationQueue alloc] init];
+//    self.operationQueue.maxConcurrentOperationCount = 1;
+//    for (NSInteger i = 0; i < assets.count; i++) {
+//        PHAsset *asset = assets[i];
+//        // 图片上传operation，上传代码请写到operation内的start方法里，内有注释
+//        TZImageUploadOperation *operation = [[TZImageUploadOperation alloc] initWithAsset:asset completion:^(UIImage * photo, NSDictionary *info, BOOL isDegraded) {
+//            if (isDegraded) return;
+//            NSLog(@"图片获取&上传完成");
+//        } progressHandler:^(double progress, NSError * _Nonnull error, BOOL * _Nonnull stop, NSDictionary * _Nonnull info) {
+//            NSLog(@"获取原图进度 %f", progress);
+//        }];
+//        [self.operationQueue addOperation:operation];
+//    }
 }
 
 // If user picking a video, this callback will be called.
