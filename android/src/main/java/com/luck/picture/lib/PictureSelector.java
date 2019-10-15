@@ -173,6 +173,7 @@ public final class PictureSelector {
         }
     }
 
+
     /**
      * set preview image
      *
@@ -197,6 +198,7 @@ public final class PictureSelector {
             }
         }
     }
+
 
     /**
      * set preview video

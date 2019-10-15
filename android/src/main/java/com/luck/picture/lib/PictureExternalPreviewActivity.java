@@ -17,6 +17,17 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import app.eeui.framework.extend.integration.glide.Glide;
+import app.eeui.framework.extend.integration.glide.Priority;
+import app.eeui.framework.extend.integration.glide.load.DataSource;
+import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
+import app.eeui.framework.extend.integration.glide.load.engine.GlideException;
+import app.eeui.framework.extend.integration.glide.load.resource.gif.GifDrawable;
+import app.eeui.framework.extend.integration.glide.request.RequestListener;
+import app.eeui.framework.extend.integration.glide.request.RequestOptions;
+import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
+import app.eeui.framework.extend.integration.glide.request.target.Target;
+import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.dialog.CustomDialog;
@@ -43,17 +54,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.eeui.framework.extend.integration.glide.Glide;
-import app.eeui.framework.extend.integration.glide.Priority;
-import app.eeui.framework.extend.integration.glide.load.DataSource;
-import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
-import app.eeui.framework.extend.integration.glide.load.engine.GlideException;
-import app.eeui.framework.extend.integration.glide.load.resource.gif.GifDrawable;
-import app.eeui.framework.extend.integration.glide.request.RequestListener;
-import app.eeui.framework.extend.integration.glide.request.RequestOptions;
-import app.eeui.framework.extend.integration.glide.request.target.SimpleTarget;
-import app.eeui.framework.extend.integration.glide.request.target.Target;
-import app.eeui.framework.extend.integration.glide.request.transition.Transition;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 

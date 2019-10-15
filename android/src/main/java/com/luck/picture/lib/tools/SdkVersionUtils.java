@@ -14,7 +14,8 @@ public class SdkVersionUtils {
      * @return
      */
     public static boolean checkedAndroid_Q() {
-        return Build.VERSION.SDK_INT > Build.VERSION_CODES.P;
+        return Build.VERSION.SDK_INT >= 29;
+        //return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
     public static boolean hasICS() {

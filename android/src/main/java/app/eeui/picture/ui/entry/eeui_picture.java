@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.luck.picture.lib.PictureSelectionModel;
 import com.luck.picture.lib.PictureSelector;
+import com.luck.picture.lib.R;
 import com.luck.picture.lib.compress.Luban;
 import com.luck.picture.lib.compress.OnCompressListener;
 import com.luck.picture.lib.config.PictureConfig;
@@ -251,7 +252,7 @@ public class eeui_picture {
         if (mediaLists.size() == 0) {
             return;
         }
-        PictureSelector.create((Activity) context).externalPicturePreview(position, mediaLists, callback);
+        PictureSelector.create((Activity) context).themeStyle(R.style.picture_default_style).openExternalPreview(position, mediaLists, callback);
     }
 
     /**

@@ -204,7 +204,7 @@ public class LocalMedia implements Parcelable {
         this.height = in.readInt();
     }
 
-    public static final Creator<LocalMedia> CREATOR = new Creator<LocalMedia>() {
+    public static final Parcelable.Creator<LocalMedia> CREATOR = new Parcelable.Creator<LocalMedia>() {
         @Override
         public LocalMedia createFromParcel(Parcel source) {
             return new LocalMedia(source);

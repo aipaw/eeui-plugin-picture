@@ -11,6 +11,7 @@ import com.luck.picture.lib.config.PictureConfig;
 import com.luck.picture.lib.config.PictureSelectionConfig;
 import com.luck.picture.lib.entity.LocalMedia;
 import com.luck.picture.lib.tools.DoubleUtils;
+import com.taobao.weex.bridge.JSCallback;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -429,6 +430,14 @@ public class PictureSelectionModel {
     public void openExternalPreview(int position, List<LocalMedia> medias) {
         if (selector != null) {
             selector.externalPicturePreview(position, medias);
+        } else {
+            throw new NullPointerException("This PictureSelector is Null");
+        }
+    }
+
+    public void openExternalPreview(int position, List<LocalMedia> medias, JSCallback callback) {
+        if (selector != null) {
+            selector.externalPicturePreview(position, medias, callback);
         } else {
             throw new NullPointerException("This PictureSelector is Null");
         }

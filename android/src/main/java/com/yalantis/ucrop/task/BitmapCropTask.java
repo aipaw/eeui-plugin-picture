@@ -152,8 +152,9 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
 
         if (shouldCrop) {
             ExifInterface originalExif = null;
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (Build.VERSION.SDK_INT >= 29) {
+            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     ParcelFileDescriptor parcelFileDescriptor =
                             mContext.get().getContentResolver().openFileDescriptor(mImageInputUri, "r");
                     originalExif = new ExifInterface(parcelFileDescriptor.getFileDescriptor());
@@ -171,7 +172,8 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
             }
             return true;
         } else {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= 29) {
+            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 return true;
             } else {
                 FileUtils.copyFile(mImageInputUri.getPath(), mImageOutputPath);

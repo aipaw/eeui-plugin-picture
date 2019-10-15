@@ -168,7 +168,8 @@ public class BitmapLoadTask extends AsyncTask<Void, Void, BitmapLoadTask.BitmapW
                 throw e;
             }
         } else {
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            if (android.os.Build.VERSION.SDK_INT >= 29) {
+            //if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 try {
                     Bitmap bitmapFromUri = BitmapUtils.getBitmapFromUri(mContext, mInputUri);
                     BitmapUtils.saveBitmap(bitmapFromUri, mOutputUri.getPath());

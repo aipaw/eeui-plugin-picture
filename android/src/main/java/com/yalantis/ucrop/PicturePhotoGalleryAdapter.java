@@ -23,16 +23,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import app.eeui.framework.extend.integration.glide.Glide;
+import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
+import app.eeui.framework.extend.integration.glide.load.resource.drawable.DrawableTransitionOptions;
+import app.eeui.framework.extend.integration.glide.request.RequestOptions;
+
 import com.luck.picture.lib.R;
 import com.yalantis.ucrop.model.CutInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import app.eeui.framework.extend.integration.glide.Glide;
-import app.eeui.framework.extend.integration.glide.load.engine.DiskCacheStrategy;
-import app.eeui.framework.extend.integration.glide.load.resource.drawable.DrawableTransitionOptions;
-import app.eeui.framework.extend.integration.glide.request.RequestOptions;
 
 /**
  * author：luck
