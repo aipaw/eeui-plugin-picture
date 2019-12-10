@@ -367,8 +367,38 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 //    [_collectionView reloadData];
 
     if ([asset isKindOfClass:[PHAsset class]]) {
-        PHAsset *phAsset = asset;
-        NSLog(@"location:%@",phAsset.location);
+
+        NSString *filename = [asset valueForKey:@"filename"];
+        NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+        NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
+        
+        BOOL compress = self.params[@"compress"] ? [WXConvert BOOL:self.params[@"compress"]] : NO;
+        
+        //压缩
+        if (compress) {
+            NSData *data = UIImageJPEGRepresentation(image, 1);
+            NSInteger imgSize = data.length/1024;
+
+            NSInteger compressSize = self.params[@"compressSize"] ? [WXConvert NSInteger:self.params[@"compressSize"]] : 100;
+            if (compressSize < imgSize) {
+                [UIImageJPEGRepresentation(image, 0.5) writeToFile:imgPath atomically:YES];
+            }
+        } else {
+           [UIImageJPEGRepresentation(image, 1.0) writeToFile:imgPath atomically:YES];
+        }
+        
+        NSString *type = self.params[@"type"] ? [WXConvert NSString:self.params[@"type"]] : @"gallery";
+        BOOL crop = self.params[@"crop"] ? [WXConvert BOOL:self.params[@"crop"]] : NO;
+        
+        NSDictionary *dic = @{@"path":imgPath, @"cutPath":imgPath, @"compressPath":imgPath, @"isCut":@(crop), @"compressed":@(compress), @"mimeType":type};
+        
+        if (self.callback) {
+            NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":@[dic]};
+            self.callback(result, YES);
+
+            NSDictionary *result2 = @{@"pageName":self.pageName, @"status":@"destroy", @"lists":@[]};
+            self.callback(result2, NO);
+        }
     }
 }
 
