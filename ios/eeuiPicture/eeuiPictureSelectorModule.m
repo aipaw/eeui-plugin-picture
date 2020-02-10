@@ -22,7 +22,7 @@
 
 @implementation eeuiPictureSelectorModule
 
-WX_PlUGIN_EXPORT_MODULE(picture, eeuiPictureSelectorModule)
+WX_PlUGIN_EXPORT_MODULE(eeuiPicture, eeuiPictureSelectorModule)
 WX_EXPORT_METHOD(@selector(create:callback:))
 WX_EXPORT_METHOD(@selector(compressImage:callback:))
 WX_EXPORT_METHOD(@selector(picturePreview:paths:callback:))

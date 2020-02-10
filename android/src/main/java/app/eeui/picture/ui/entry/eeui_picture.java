@@ -48,11 +48,11 @@ public class eeui_picture {
      */
     public void init(Context content) {
         try {
-            WXSDKEngine.registerModule("picture", WeexModule.class);
+            WXSDKEngine.registerModule("eeuiPicture", WeexModule.class);
         } catch (WXException e) {
             e.printStackTrace();
         }
-        WebCallBean.addClassData("picture", WebModule.class);
+        WebCallBean.addClassData("eeuiPicture", WebModule.class);
     }
 
     /****************************************************************************************/

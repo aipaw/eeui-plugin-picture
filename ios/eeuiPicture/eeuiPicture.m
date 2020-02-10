@@ -23,7 +23,7 @@ WEEX_PLUGIN_INIT(eeuiPicture)
 
 - (void) setJSCallModule:(JSCallCommon *)callCommon webView:(WKWebView*)webView
 {
-    [callCommon setJSCallAssign:webView name:@"picture" bridge:[[eeuiPictureBridge alloc] init]];
+    [callCommon setJSCallAssign:webView name:@"eeuiPicture" bridge:[[eeuiPictureBridge alloc] init]];
 }
 
 @end
