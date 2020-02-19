@@ -219,7 +219,7 @@ static Class ImageViewClass = nil;
     NSInteger width = iPhoneXSeries ? 80 : 56;
     UIImage *deleteImg = [DeviceUtil getIconText:@"md-trash" font:20 color:@"#ffffff"];
     UIButton *deleteBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    deleteBtn.frame = CGRectMake(self.view.bounds.size.width - width, 0, width, 56);
+    deleteBtn.frame = CGRectMake(self.view.bounds.size.width - width, iPhoneXSeries ? 22 : 0, width, 56);
     [deleteBtn setImage:deleteImg forState:UIControlStateNormal];
     [deleteBtn addTarget:self action:@selector(removeCurrentPage) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:deleteBtn];

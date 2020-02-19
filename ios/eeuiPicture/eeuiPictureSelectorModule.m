@@ -51,6 +51,12 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     BOOL crop = params[@"crop"] ? [WXConvert BOOL:params[@"crop"]] : NO;
     BOOL circle = params[@"circle"] ? [WXConvert BOOL:params[@"circle"]] : NO;
     BOOL compress = params[@"compress"] ? [WXConvert BOOL:params[@"compress"]] : NO;
+    
+    NSMutableArray *selected = @[].mutableCopy;
+    if ([params[@"selected"] isKindOfClass:[NSArray class]]) {
+        selected = [(NSArray *) params[@"selected"] mutableCopy];
+    }
+
 
     NSDictionary *result = @{@"pageName":self.pageName, @"status":@"create", @"lists":@[]};
     self.callback(result, YES);
@@ -63,15 +69,36 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     TZImagePickerController *imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:maxNum columnNumber:spanCount delegate:self pushPhotoPickerVc:YES];
     // imagePickerVc.navigationBar.translucent = NO;
 
-#pragma mark - 五类个性化设置，这些参数都可以不传，此时会走默认设置
-//    imagePickerVc.isSelectOriginalPhoto = YES;
-//
-//    if (self.maxCountTF.text.integerValue > 1) {
-//        // 1.设置目前已经选中的图片数组
-//        imagePickerVc.selectedAssets = _selectedAssets; // 目前已经选中的图片数组
-//    }
+    #pragma mark - 五类个性化设置，这些参数都可以不传，此时会走默认设置
+    //    imagePickerVc.isSelectOriginalPhoto = YES;
+    //
+    //    if (self.maxCountTF.text.integerValue > 1) {
+    //        // 1.设置目前已经选中的图片数组
+    //        imagePickerVc.selectedAssets = _selectedAssets; // 目前已经选中的图片数组
+    //    }
+    if (selected.count > 0) {
+        NSMutableArray *selectedArray =@[].mutableCopy;
+        for (int i = 0; i < _selectedAssets.count; i++) {
+            PHAsset *asset = _selectedAssets[i];
+
+            NSString *filename = [asset valueForKey:@"filename"];
+            NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+            NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
+            for (int j = 0; j < selected.count; j++) {
+                NSDictionary *sel = selected[j];
+                NSString *selPath = [sel valueForKey:@"path"];
+                if ([selPath isEqual:imgPath]) {
+                    [selectedArray addObject:asset];
+                }
+            }
+        }
+        if (selectedArray.count > 0) {
+            imagePickerVc.selectedAssets = selectedArray;
+        }
+    }
+    
     imagePickerVc.allowTakePicture = camera; // 在内部显示拍照按钮
-//    imagePickerVc.allowTakeVideo = self.showTakeVideoBtnSwitch.isOn;   // 在内部显示拍视频按
+    //    imagePickerVc.allowTakeVideo = self.showTakeVideoBtnSwitch.isOn;   // 在内部显示拍视频按
     imagePickerVc.videoMaximumDuration = recordVideoSecond; // 视频最大拍摄时间
     [imagePickerVc setUiImagePickerControllerSettingBlock:^(UIImagePickerController *imagePickerController) {
         imagePickerController.videoQuality = UIImagePickerControllerQualityTypeHigh;
@@ -125,10 +152,10 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     }
     imagePickerVc.allowPickingOriginalPhoto = YES;
     imagePickerVc.allowPickingGif = gif;
-//    imagePickerVc.allowPickingMultipleVideo = self.allowPickingMuitlpleVideoSwitch.isOn; // 是否可以多选视频
+    //    imagePickerVc.allowPickingMultipleVideo = self.allowPickingMuitlpleVideoSwitch.isOn; // 是否可以多选视频
 
     // 4. 照片排列按修改时间升序
-//    imagePickerVc.sortAscendingByModificationDate = self.sortAscendingSwitch.isOn;
+    //    imagePickerVc.sortAscendingByModificationDate = self.sortAscendingSwitch.isOn;
 
      imagePickerVc.minImagesCount = minNum;
     // imagePickerVc.alwaysEnableDoneBtn = YES;
@@ -142,10 +169,10 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     imagePickerVc.allowCrop = crop;
     imagePickerVc.needCircleCrop = circle;
     // 设置竖屏下的裁剪尺寸
-//    NSInteger left = 30;
-//    NSInteger widthHeight = self.view.tz_width - 2 * left;
-//    NSInteger top = (self.view.tz_height - widthHeight) / 2;
-//    imagePickerVc.cropRect = CGRectMake(left, top, widthHeight, widthHeight);
+    //    NSInteger left = 30;
+    //    NSInteger widthHeight = self.view.tz_width - 2 * left;
+    //    NSInteger top = (self.view.tz_height - widthHeight) / 2;
+    //    imagePickerVc.cropRect = CGRectMake(left, top, widthHeight, widthHeight);
     // 设置横屏下的裁剪尺寸
     // imagePickerVc.cropRectLandscape = CGRectMake((self.view.tz_height - widthHeight) / 2, left, widthHeight, widthHeight);
     /*
@@ -168,9 +195,9 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     // imagePickerVc.isStatusBarDefault = NO;
     imagePickerVc.statusBarStyle = UIStatusBarStyleLightContent;
     imagePickerVc.modalPresentationStyle = UIModalPresentationFullScreen;
-    
+
     // 设置是否显示图片序号
-//    imagePickerVc.showSelectedIndex = self.showSelectedIndexSwitch.isOn;
+    //    imagePickerVc.showSelectedIndex = self.showSelectedIndexSwitch.isOn;
 
     // 设置首选语言 / Set preferred language
     // imagePickerVc.preferredLanguage = @"zh-Hans";
@@ -178,7 +205,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
     // 设置languageBundle以使用其它语言 / Set languageBundle to use other language
     // imagePickerVc.languageBundle = [NSBundle bundleWithPath:[[NSBundle mainBundle] pathForResource:@"tz-ru" ofType:@"lproj"]];
 
-#pragma mark - 到这里为止
+    #pragma mark - 到这里为止
 
     // You can get the photos by block, the same as by delegate.
     // 你可以通过block或者代理，来得到用户选择的照片.
@@ -214,7 +241,13 @@ WX_EXPORT_METHOD(@selector(deleteCache))
             NSString *type = ws.params[@"type"] ? [WXConvert NSString:ws.params[@"type"]] : @"gallery";
             BOOL crop = ws.params[@"crop"] ? [WXConvert BOOL:ws.params[@"crop"]] : NO;
 
-            NSDictionary *dic = @{@"path":imgPath, @"cutPath":imgPath, @"compressPath":imgPath, @"isCut":@(crop), @"compressed":@(compress), @"mimeType":type};
+            NSDictionary *dic = @{@"path":imgPath,
+                                  @"cutPath":imgPath,
+                                  @"compressPath":imgPath,
+                                  @"isCut":@(crop),
+                                  @"isCompressed":@(compress),
+                                  @"compressed":@(compress),
+                                  @"mimeType":type};
             [list addObject:dic];
         }
 
@@ -247,7 +280,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
            }
            NSDictionary *titleTextAttributes = [tzBarItem titleTextAttributesForState:UIControlStateNormal];
            [BarItem setTitleTextAttributes:titleTextAttributes forState:UIControlStateNormal];
-    
+
        }
     return _imagePickerVc;
 }
@@ -293,7 +326,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         __strong typeof(weakSelf) strongSelf = weakSelf;
         strongSelf.location = nil;
     }];
-    
+
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypeCamera;
     if ([UIImagePickerController isSourceTypeAvailable: UIImagePickerControllerSourceTypeCamera]) {
         self.imagePickerVc.sourceType = sourceType;
@@ -316,7 +349,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 - (void)imagePickerController:(UIImagePickerController*)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     [picker dismissViewControllerAnimated:YES completion:nil];
     NSString *type = [info objectForKey:UIImagePickerControllerMediaType];
-    
+
     TZImagePickerController *tzImagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:1 delegate:self];
 //    tzImagePickerVc.sortAscendingByModificationDate = self.sortAscendingSwitch.isOn;
     [tzImagePickerVc showProgressHUD];
@@ -371,9 +404,9 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         NSString *filename = [asset valueForKey:@"filename"];
         NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
         NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
-        
+
         BOOL compress = self.params[@"compress"] ? [WXConvert BOOL:self.params[@"compress"]] : NO;
-        
+
         //压缩
         if (compress) {
             NSData *data = UIImageJPEGRepresentation(image, 1);
@@ -386,12 +419,18 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         } else {
            [UIImageJPEGRepresentation(image, 1.0) writeToFile:imgPath atomically:YES];
         }
-        
+
         NSString *type = self.params[@"type"] ? [WXConvert NSString:self.params[@"type"]] : @"gallery";
         BOOL crop = self.params[@"crop"] ? [WXConvert BOOL:self.params[@"crop"]] : NO;
-        
-        NSDictionary *dic = @{@"path":imgPath, @"cutPath":imgPath, @"compressPath":imgPath, @"isCut":@(crop), @"compressed":@(compress), @"mimeType":type};
-        
+
+        NSDictionary *dic = @{@"path":imgPath,
+                              @"cutPath":imgPath,
+                              @"compressPath":imgPath,
+                              @"isCut":@(crop),
+                              @"isCompressed":@(compress),
+                              @"compressed":@(compress),
+                              @"mimeType":type};
+
         if (self.callback) {
             NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":@[dic]};
             self.callback(result, YES);
@@ -438,14 +477,14 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 //    _isSelectOriginalPhoto = isSelectOriginalPhoto;
 //    [_collectionView reloadData];
     // _collectionView.contentSize = CGSizeMake(0, ((_selectedPhotos.count + 2) / 3 ) * (_margin + _itemWH));
-    
+
     // 1.打印图片名字
 //    [self printAssetsName:assets];
     // 2.图片位置信息
     for (PHAsset *phAsset in assets) {
         NSLog(@"location:%@",phAsset.location);
     }
-    
+
     // 3. 获取原图的示例，用队列限制最大并发为1，避免内存暴增
 //    self.operationQueue = [[NSOperationQueue alloc] init];
 //    self.operationQueue.maxConcurrentOperationCount = 1;
@@ -480,7 +519,13 @@ WX_EXPORT_METHOD(@selector(deleteCache))
         BOOL crop = self.params[@"crop"] ? [WXConvert BOOL:self.params[@"crop"]] : NO;
         BOOL compress = self.params[@"compress"] ? [WXConvert BOOL:self.params[@"compress"]] : NO;
 
-        NSDictionary *dic = @{@"path":outputPath, @"cutPath":outputPath, @"compressPath":outputPath, @"isCut":@(crop), @"compressed":@(compress), @"mimeType":types};
+        NSDictionary *dic = @{@"path":outputPath,
+                              @"cutPath":outputPath,
+                              @"compressPath":outputPath,
+                              @"isCut":@(crop),
+                              @"isCompressed":@(compress),
+                              @"compressed":@(compress),
+                              @"mimeType":types};
 
         NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":@[dic]};
         if (self.callback) {
@@ -563,14 +608,30 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 }
 
 #pragma mark
-- (void)compressImage:(NSDictionary*)params callback:(WXModuleKeepAliveCallback)callback
+- (void)compressImage:(id)idParam callback:(WXModuleKeepAliveCallback)callback
 {
     BOOL isSave = NO;
-    NSInteger compressSize = params[@"compressSize"] ? [WXConvert NSInteger:params[@"compressSize"]] : 100;
+    NSMutableDictionary *params = @{}.mutableCopy;
+    if ([idParam isKindOfClass:[NSDictionary class]]) {
+        params = [(NSDictionary *) idParam mutableCopy];
+    }else if ([idParam isKindOfClass:[NSArray class]]) {
+        params = @{@"lists": (NSArray *)idParam, @"compressSize": @(90)}.mutableCopy;
+    }
+    
+    NSInteger compressSize = params[@"compressSize"] ? [WXConvert NSInteger:params[@"compressSize"]] : 90;
     NSMutableArray *list = [NSMutableArray arrayWithArray: params[@"lists"]];
     for (NSInteger i = 0; i < list.count; i++) {
-        NSMutableDictionary *mDic = [NSMutableDictionary dictionaryWithDictionary:list[i]];
-
+        
+        NSMutableDictionary *mDic = @{}.mutableCopy;
+        id item = [NSMutableDictionary dictionaryWithDictionary:list[i]];
+        
+        if ([item isKindOfClass:[NSDictionary class]]) {
+            mDic = [(NSDictionary *) item mutableCopy];
+        } else if ([item isKindOfClass:[NSString class]]) {
+            mDic = @{ @"path": item }.mutableCopy;
+        }
+        
+        [mDic setObject:@(1) forKey:@"isCompressed"];
         [mDic setObject:@(1) forKey:@"compressed"];
 
         NSString *path = [mDic objectForKey:@"path"];
@@ -587,7 +648,6 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 
     if (callback && list) {
         NSDictionary *res = @{@"status":isSave?@"success":@"error", @"lists":list};
-        NSLog(@"%@", res);
         callback(res, YES);
     }
 }
