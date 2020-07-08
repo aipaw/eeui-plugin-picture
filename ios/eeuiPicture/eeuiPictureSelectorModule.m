@@ -209,58 +209,160 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 
     // You can get the photos by block, the same as by delegate.
     // 你可以通过block或者代理，来得到用户选择的照片.
-
     __weak typeof(self) ws = self;
     [imagePickerVc setDidFinishPickingPhotosHandle:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
-
-        ws.selectedAssets = [NSMutableArray arrayWithArray:assets];
-        ws.selectedPhotos = [NSMutableArray arrayWithArray:photos];
-
-        NSMutableArray *list = [NSMutableArray arrayWithCapacity:assets.count];
-        for (int i = 0; i < assets.count; i++) {
-            PHAsset *asset = assets[i];
-            UIImage *img = photos[i];
-
-            NSString *filename = [asset valueForKey:@"filename"];
-            NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
-            NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
-
-            //压缩
-            if (compress) {
-                NSData *data = UIImageJPEGRepresentation(img, 1);
-                NSInteger imgSize = data.length/1024;
-
-                NSInteger compressSize = ws.params[@"compressSize"] ? [WXConvert NSInteger:ws.params[@"compressSize"]] : 100;
-                if (compressSize < imgSize) {
-                    [UIImageJPEGRepresentation(img, 0.5) writeToFile:imgPath atomically:YES];
-                }
-            } else {
-               [UIImageJPEGRepresentation(img, 1.0) writeToFile:imgPath atomically:YES];
-            }
-
-            NSString *type = ws.params[@"type"] ? [WXConvert NSString:ws.params[@"type"]] : @"gallery";
-            BOOL crop = ws.params[@"crop"] ? [WXConvert BOOL:ws.params[@"crop"]] : NO;
-
-            NSDictionary *dic = @{@"path":imgPath,
-                                  @"cutPath":imgPath,
-                                  @"compressPath":imgPath,
-                                  @"isCut":@(crop),
-                                  @"isCompressed":@(compress),
-                                  @"compressed":@(compress),
-                                  @"mimeType":type};
-            [list addObject:dic];
-        }
-
-        if (self.callback) {
-            NSDictionary *result = @{@"pageName":ws.pageName, @"status":@"success", @"lists":list};
-            ws.callback(result, YES);
-
-            NSDictionary *result2 = @{@"pageName":ws.pageName, @"status":@"destroy", @"lists":@[]};
-            ws.callback(result2, NO);
-        }
+        [ws pictureTaskAssetsCompress:compress assets:assets photos:photos];
     }];
-
     [self openViewController:imagePickerVc];
+}
+
+- (NSDictionary *)writeCompressImageActionCompress:(BOOL)compress img:(UIImage *)img imgPath:(NSString *)imgPath idx:(int)idx typeStr:(NSString *)typeStr{
+    
+    if (compress) {
+        NSData *data = UIImageJPEGRepresentation(img, 1);
+        NSInteger imgSize = data.length/1024;
+
+        NSInteger compressSize = self.params[@"compressSize"] ? [WXConvert NSInteger:self.params[@"compressSize"]] : 100;
+        if (compressSize < imgSize) {
+            [UIImageJPEGRepresentation(img, 0.5) writeToFile:imgPath atomically:YES];
+        }
+    } else {
+       [UIImageJPEGRepresentation(img, 1.0) writeToFile:imgPath atomically:YES];
+    }
+    
+    NSString *type = self.params[@"type"] ? [WXConvert NSString:self.params[@"type"]] : @"gallery";
+    BOOL crop = self.params[@"crop"] ? [WXConvert BOOL:self.params[@"crop"]] : NO;
+    
+    NSDictionary *dic = @{@"path":imgPath,
+                          @"cutPath":imgPath,
+                          @"compressPath":imgPath,
+                          @"isCut":@(crop),
+                          @"isCompressed":@(compress),
+                          @"compressed":@(compress),
+                          @"mimeType":type,
+                          @"idx": @(idx),
+                          @"type_str": typeStr?typeStr:@""
+    };
+    
+    return dic;
+}
+
+/// HEIF 格式检测
+- (BOOL)isHEIF:(PHAsset *)asset {
+
+    __block BOOL isHEIF = NO;
+    if (@available(iOS 9, *)) {
+        NSArray *resourceList = [PHAssetResource assetResourcesForAsset:asset];
+        [resourceList enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            PHAssetResource *resource = obj;
+            NSString *UTI = resource.uniformTypeIdentifier;
+            if ([UTI isEqualToString:@"public.heif"] || [UTI isEqualToString:@"public.heic"]) {
+                isHEIF = YES;
+                *stop = YES;
+            }
+        }];
+    } else {
+        // Fallback on earlier versions
+        NSString *UTI = [asset valueForKey:@"uniformTypeIdentifier"];
+        isHEIF = [UTI isEqualToString:@"public.heif"] || [UTI isEqualToString:@"public.heic"];
+    }
+    return isHEIF;
+}
+
+- (void)pictureTaskAssetsCompress:(BOOL)compress assets:(NSArray *)assets photos:(NSArray<UIImage *> *)photos{
+    
+    self.selectedAssets = [NSMutableArray arrayWithArray:assets];
+    self.selectedPhotos = [NSMutableArray arrayWithArray:photos];
+
+    dispatch_group_t group = dispatch_group_create();
+    
+    NSMutableArray *list = [NSMutableArray arrayWithCapacity:assets.count];
+    for (int i = 0; i < assets.count; i++) {
+        PHAsset *asset = assets[i];
+        UIImage *img = photos[i];
+
+        NSString *filename = [asset valueForKey:@"filename"];
+        NSString *path = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) firstObject];
+        NSString *imgPath = [NSString stringWithFormat:@"%@/%@", path, filename];
+        
+        if (![[NSFileManager defaultManager] fileExistsAtPath:imgPath]) {
+            NSData *no_path_img_data = UIImagePNGRepresentation(img);
+            [no_path_img_data writeToFile:imgPath atomically:YES];
+        }
+        
+        /// HEIF 格式检测
+        BOOL isHEIF = [self isHEIF:asset];
+        
+        if (isHEIF) {
+            dispatch_group_enter(group);
+            [asset requestContentEditingInputWithOptions:nil completionHandler:^(PHContentEditingInput * _Nullable contentEditingInput, NSDictionary * _Nonnull info) {
+                
+                NSDictionary *dic;
+                if (contentEditingInput.fullSizeImageURL) {
+                    CIImage *ciImage = [CIImage imageWithContentsOfURL:contentEditingInput.fullSizeImageURL];
+                    CIContext *context = [CIContext context];
+                    NSData *jpgData;
+                    /// HEIC格式为iOS11后更新的  因此不需要适配iOS10以下
+                    if (@available(iOS 10.0, *)) {
+                        jpgData = [context JPEGRepresentationOfImage:ciImage colorSpace:ciImage.colorSpace options:@{}];
+                    }
+                
+                    if (jpgData) {
+                        NSString *temp_path_prifx = NSTemporaryDirectory();
+                        NSString *tempPath = [NSString stringWithFormat:@"%@%@%d.jpeg", temp_path_prifx, @"cache_heif_change_img_", i];
+                        if ([jpgData writeToFile:tempPath atomically:YES]) {
+                            UIImage *c_img = [UIImage imageWithData:jpgData];
+                            dic = [self writeCompressImageActionCompress:compress img:c_img imgPath:tempPath idx:i typeStr:@"HEIC_Cache"];
+                        } else {
+                            dic = [self writeCompressImageActionCompress:compress img:img imgPath:imgPath idx:i typeStr: nil];
+                        }
+                    } else {
+                        dic = [self writeCompressImageActionCompress:compress img:img imgPath:imgPath idx:i typeStr:nil];
+                    }
+                } else {
+                    dic = [self writeCompressImageActionCompress:compress img:img imgPath:imgPath idx:i typeStr:nil];
+                }
+                [list addObject:dic];
+                dispatch_group_leave(group);
+            }];
+            
+        } else {
+            
+            dispatch_group_enter(group);
+            dispatch_async(dispatch_get_global_queue(0, 0), ^{
+                NSDictionary *dic = [self writeCompressImageActionCompress:compress img:img imgPath:imgPath idx:i typeStr:nil];
+                [list addObject:dic];
+                dispatch_group_leave(group);
+            });
+        }
+    }
+    
+    dispatch_group_notify(group, dispatch_get_global_queue(0, 0), ^{
+        if (self.callback) {
+            
+            if (list.count > 1) {
+                [list sortUsingComparator:^NSComparisonResult(id  _Nonnull obj1, id  _Nonnull obj2) {
+                    NSDictionary *dict1 = obj1;
+                    NSDictionary *dict2 = obj2;
+                    if ((NSInteger)[dict1 valueForKey:@"idx"] < (NSInteger)[dict2 valueForKey:@"idx"]) {
+                        return NSOrderedDescending;
+                    } else {
+                        return NSOrderedAscending;
+                    }
+                }];
+                
+                NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":list};
+                self.callback(result, YES);
+                
+            } else {
+                NSDictionary *result = @{@"pageName":self.pageName, @"status":@"success", @"lists":list};
+                self.callback(result, YES);
+            }
+                
+            NSDictionary *result2 = @{@"pageName":self.pageName, @"status":@"destroy", @"lists":@[]};
+            self.callback(result2, NO);
+        }
+    });
 }
 
 - (UIImagePickerController *)imagePickerVc {
