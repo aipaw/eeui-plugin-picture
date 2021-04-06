@@ -813,7 +813,7 @@ WX_EXPORT_METHOD(@selector(deleteCache))
 {
     if ([[DeviceUtil getTopviewControler] isKindOfClass:[eeuiViewController class]]) {
         eeuiViewController *top_vc = (eeuiViewController*)[DeviceUtil getTopviewControler];
-        [[eeuiNewPageManager sharedIntstance] onPageStatusListener:@{@"listenerName": @"otherPlugin", @"pageName": top_vc.pageName} status:@"pauseBefore"];
+        [[eeuiNewPageManager sharedIntstance] onPageStatusListener:@{@"listenerName": @"otherPlugin", @"pageName": top_vc.pageName} status:@"pauseBefore" weexInstance:nil];
         if ([top_vc.animatedType isEqualToString:@"present"]) {
             vc.modalPresentationStyle = UIModalPresentationPageSheet;
         } else {
